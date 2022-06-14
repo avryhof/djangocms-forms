@@ -392,7 +392,7 @@ class SubmissionExportForm(forms.Form):
         renderer=None,
         **kwargs
     ):
-        format_choice_arg = kwargs.get("format_choices", getattr(settings, 'DJANGOCMS_FORMS_FORMAT_CHOICES', None))
+        format_choice_arg = kwargs.get("format_choices", getattr(settings, "DJANGOCMS_FORMS_FORMAT_CHOICES", None))
         if isinstance(format_choice_arg, tuple):
             self.FORMAT_CHOICES = format_choice_arg
 
