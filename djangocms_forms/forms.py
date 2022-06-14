@@ -6,9 +6,10 @@ import re
 
 from captcha.fields import ReCaptchaField
 from django import forms
+from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget, FilteredSelectMultiple
 from django.core.mail import EmailMultiAlternatives
-from django.urls import reverse
+from django.forms.utils import ErrorList
 from django.template import TemplateDoesNotExist
 from django.template.defaultfilters import slugify
 from django.template.loader import get_template, render_to_string
@@ -22,6 +23,7 @@ except ImportError:
 
     def get_ip(*args, **kwargs):
         return get_client_ip(*args, **kwargs)[0]
+
 
 from unidecode import unidecode
 
@@ -176,7 +178,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs(extra_attrs={"autocomplete": "email"})
 
         field_attrs.update(
-            {"widget": forms.EmailInput(attrs=widget_attrs), }
+            {"widget": forms.EmailInput(attrs=widget_attrs),}
         )
         return forms.EmailField(**field_attrs)
 
@@ -195,7 +197,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": forms.CheckboxSelectMultiple(attrs=widget_attrs), "choices": field.get_choices(), }
+            {"widget": forms.CheckboxSelectMultiple(attrs=widget_attrs), "choices": field.get_choices(),}
         )
 
         if field.initial:
@@ -220,7 +222,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": forms.RadioSelect(attrs=widget_attrs), "choices": field.get_choices(), }
+            {"widget": forms.RadioSelect(attrs=widget_attrs), "choices": field.get_choices(),}
         )
         return forms.ChoiceField(**field_attrs)
 
@@ -241,7 +243,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": DateInput(attrs=widget_attrs), }
+            {"widget": DateInput(attrs=widget_attrs),}
         )
         return forms.DateField(**field_attrs)
 
@@ -250,7 +252,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": TimeInput(attrs=widget_attrs), }
+            {"widget": TimeInput(attrs=widget_attrs),}
         )
         return forms.TimeField(**field_attrs)
 
@@ -259,7 +261,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": forms.HiddenInput(attrs=widget_attrs), }
+            {"widget": forms.HiddenInput(attrs=widget_attrs),}
         )
         return forms.CharField(**field_attrs)
 
@@ -282,7 +284,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": forms.PasswordInput(attrs=widget_attrs), }
+            {"widget": forms.PasswordInput(attrs=widget_attrs),}
         )
         return forms.CharField(**field_attrs)
 
@@ -291,7 +293,7 @@ class FormBuilder(forms.Form):
         widget_attrs = field.build_widget_attrs()
 
         field_attrs.update(
-            {"widget": TelephoneInput(attrs=widget_attrs), }
+            {"widget": TelephoneInput(attrs=widget_attrs),}
         )
         return forms.CharField(**field_attrs)
 
@@ -302,7 +304,7 @@ class FormBuilder(forms.Form):
             if hasattr(value, "url"):
                 value = value.url
             form_data.append(
-                {"name": field, "label": self.fields[field].label, "value": value, "type": self.field_types[field], }
+                {"name": field, "label": self.fields[field].label, "value": value, "type": self.field_types[field],}
             )
 
         referrer = self.cleaned_data.get("referrer", "")
@@ -374,3 +376,36 @@ class SubmissionExportForm(forms.Form):
     )
     from_date = forms.DateField(label=_("From date"), required=False, widget=AdminDateWidget)
     to_date = forms.DateField(label=_("To date"), required=False, widget=AdminDateWidget)
+
+    def __init__(
+        self,
+        data=None,
+        files=None,
+        auto_id="id_%s",
+        prefix=None,
+        initial=None,
+        error_class=ErrorList,
+        label_suffix=None,
+        empty_permitted=False,
+        field_order=None,
+        use_required_attribute=None,
+        renderer=None,
+        **kwargs
+    ):
+        format_choice_arg = kwargs.get("format_choices", getattr(settings, 'DJANGOCMS_FORMS_FORMAT_CHOICES', None))
+        if isinstance(format_choice_arg, tuple):
+            self.FORMAT_CHOICES = format_choice_arg
+
+        super(SubmissionExportForm, self).__init__(
+            data,
+            files,
+            auto_id,
+            prefix,
+            initial,
+            error_class,
+            label_suffix,
+            empty_permitted,
+            field_order,
+            use_required_attribute,
+            renderer,
+        )
