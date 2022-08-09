@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 import datetime
 from functools import update_wrapper
 
@@ -14,11 +12,12 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.defaultfilters import slugify, yesno
 from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils import timezone
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from tablib import Dataset
 
 from .conf import settings
@@ -30,11 +29,7 @@ try:
 except ImportError:
     IS_POPUP_VAR = '_popup'
 
-try:
-    from django.contrib.admin.utils import unquote
-except ImportError:
-    from django.contrib.admin.util import unquote
-
+from django.contrib.admin.utils import unquote
 
 try:
     from django.http import JsonResponse
@@ -62,13 +57,13 @@ class FormSubmissionAdmin(admin.ModelAdmin):
     change_form_template = 'admin/djangocms_forms/formsubmission/change_form.html'
     change_list_template = 'admin/djangocms_forms/formsubmission/change_list.html'
     export_form_template = 'admin/djangocms_forms/formsubmission/export_form.html'
-    list_display = ('plugin', 'creation_date_display', 'created_by', 'ip', 'referrer', )
-    list_filter = (FormFilter, )
-    readonly_fields = ('creation_date_display', 'created_by', 'plugin', 'ip', 'referrer', )
+    list_display = ('plugin', 'creation_date_display', 'created_by', 'ip', 'referrer',)
+    list_filter = (FormFilter,)
+    readonly_fields = ('creation_date_display', 'created_by', 'plugin', 'ip', 'referrer',)
     date_hierarchy = 'creation_date'
     fieldsets = (
         (None, {
-            'fields': ('creation_date_display', 'created_by', 'ip', 'referrer', )
+            'fields': ('creation_date_display', 'created_by', 'ip', 'referrer',)
         }),
     )
 
@@ -87,6 +82,7 @@ class FormSubmissionAdmin(admin.ModelAdmin):
 
     def creation_date_display(self, obj):
         return obj.creation_date.strftime(settings.DJANGOCMS_FORMS_DATETIME_FORMAT)
+
     creation_date_display.short_description = _('Sent On')
 
     def get_queryset(self, request):
@@ -98,18 +94,18 @@ class FormSubmissionAdmin(admin.ModelAdmin):
         Add the export view to urls.
         """
         urls = super(FormSubmissionAdmin, self).get_urls()
-        from django.conf.urls import url
 
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
+
             return update_wrapper(wrapper, view)
 
         # noinspection PyProtectedMember
         info = self.model._meta.app_label, self.model._meta.model_name
 
         extra_urls = [
-            url(r'^export/$', wrap(self.export_view), name='%s_%s_export' % info),
+            path('export/', wrap(self.export_view), name='%s_%s_export' % info),
         ]
         return extra_urls + urls
 
@@ -129,7 +125,7 @@ class FormSubmissionAdmin(admin.ModelAdmin):
 
         if obj:
             context.update({
-                'title': force_text(obj.plugin),
+                'title': force_str(obj.plugin),
             })
 
         return super(FormSubmissionAdmin, self).change_view(
@@ -214,7 +210,7 @@ class FormSubmissionAdmin(admin.ModelAdmin):
                     if label in headers:
                         row[headers.index(label)] = humanize(field)
 
-                    row[-4] = force_text(submission.created_by or _('Unknown'))
+                    row[-4] = force_str(submission.created_by or _('Unknown'))
                     row[-3] = submission.creation_date.strftime(
                         settings.DJANGOCMS_FORMS_DATETIME_FORMAT)
                     row[-2] = submission.ip
@@ -249,7 +245,7 @@ class FormSubmissionAdmin(admin.ModelAdmin):
         media = self.media + adminform.media
 
         context = {
-            'title': _('Export %s') % force_text(self.opts.verbose_name_plural),
+            'title': _('Export %s') % force_str(self.opts.verbose_name_plural),
             'adminform': adminform,
             'is_popup': (IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET),
             'media': mark_safe(media),

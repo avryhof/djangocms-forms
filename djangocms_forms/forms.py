@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import re
 
 from captcha.fields import ReCaptchaField
@@ -12,7 +10,7 @@ from django.template import TemplateDoesNotExist
 from django.template.defaultfilters import slugify
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 try:
     from ipware.ip import get_ip
