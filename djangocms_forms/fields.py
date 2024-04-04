@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import SET_NULL
 from django.template.defaultfilters import filesizeformat
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .conf import settings
 
@@ -40,7 +40,11 @@ class FormBuilderFileField(forms.FileField):
             )
 
         if uploaded_file.size > self.max_upload_size:
-            params = {"max_size": filesizeformat(self.max_upload_size), "size": filesizeformat(uploaded_file.size)}
+            if hasattr(uploaded_file, "_size"):
+                params = {"max_size": filesizeformat(self.max_upload_size), "size": filesizeformat(uploaded_file._size)}
+            else:
+                params = {"max_size": filesizeformat(self.max_upload_size), "size": filesizeformat(uploaded_file.size)}
+
             msg = _("Please keep file size under %(max_size)s. Current size is %(size)s.") % params
             raise forms.ValidationError(msg)
 
